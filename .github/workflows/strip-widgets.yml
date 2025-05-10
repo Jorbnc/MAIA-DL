@@ -29,15 +29,18 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Limpiar metadata.widgets de cada notebook
+      - name: Eliminar cualquier clave widgets recursivamente
         run: |
-          echo "Procesando notebooks para eliminar metadata.widgets..."
+          echo "Procesando notebooks para eliminar cualquier clave 'widgets'..."
           for file in $(find . -name '*.ipynb'); do
             echo " - $file"
-            # Eliminamos widgets del nivel raíz y de cada celda
-            jq 'del(.metadata.widgets)
-                | .cells |= map(if .metadata then del(.metadata.widgets) else . end)' \
-              "$file" > "${file}.clean"
+            jq 'walk(
+                  if type=="object" then
+                    del(.widgets)      # elimina cualquier campo "widgets"
+                  else
+                    .
+                  end
+                )' "$file" > "${file}.clean"
             mv "${file}.clean" "$file"
           done
 

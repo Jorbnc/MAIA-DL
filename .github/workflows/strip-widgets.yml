@@ -28,11 +28,18 @@ jobs:
     - name: Instalar jq
       run: sudo apt-get update && sudo apt-get install -y jq
 
-    - name: Limpiar metadata.widgets en todo el JSON
+    - name: Limpiar metadata.widgets de cada notebook
       run: |
-        find . -name '*.ipynb' -print0 \
-        | xargs -0 -n1 -I{} sh -c \
-            "jq 'walk(if type==\"object\" then del(.widgets) else . end)' '{}' > /tmp/nb && mv /tmp/nb '{}'"
+        echo "Procesando notebooks para eliminar metadata.widgets..."
+        for file in $(find . -name '*.ipynb'); do
+          echo " - $file"
+          # Eliminamos widgets del nivel raíz y de cada celda
+          jq 'del(.metadata.widgets) 
+              | .cells |= map(if .metadata then del(.metadata.widgets) else . end)' \
+             "$file" > "${file}.clean"
+          mv "${file}.clean" "$file"
+        done
+
 
     - name: Commit y push si hay cambios
       run: |

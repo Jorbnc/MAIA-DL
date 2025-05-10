@@ -28,11 +28,11 @@ jobs:
     - name: Instalar jq
       run: sudo apt-get update && sudo apt-get install -y jq
 
-    - name: Limpiar metadata.widgets
+    - name: Limpiar metadata.widgets en todo el JSON
       run: |
         find . -name '*.ipynb' -print0 \
         | xargs -0 -n1 -I{} sh -c \
-            "jq 'del(.metadata.widgets) | .cells |= map(del(.metadata.widgets))' '{}' > /tmp/nb && mv /tmp/nb '{}'"
+            "jq 'walk(if type==\"object\" then del(.widgets) else . end)' '{}' > /tmp/nb && mv /tmp/nb '{}'"
 
     - name: Commit y push si hay cambios
       run: |

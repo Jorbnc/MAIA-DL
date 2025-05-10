@@ -1,3 +1,4 @@
+# .github/workflows/strip-widgets.yml
 name: Strip widget metadata
 
 permissions:
@@ -8,16 +9,21 @@ on:
     paths:
       - '**/*.ipynb'
       - '.github/workflows/strip-widgets.yml'
+  workflow_dispatch:
 
 jobs:
   strip_widgets:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout completo
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
+
+    - name: Mostrar lista de notebooks
+      run: |
+        echo "### Notebooks a limpiar:"
+        find . -name '*.ipynb'
 
     - name: Instalar jq
       run: sudo apt-get update && sudo apt-get install -y jq
@@ -39,3 +45,4 @@ jobs:
         else
           echo "🟢 No hay widgets que limpiar."
         fi
+
